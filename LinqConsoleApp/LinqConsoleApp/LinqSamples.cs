@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LinqConsoleApp
@@ -171,7 +172,6 @@ namespace LinqConsoleApp
             Emps = empsCol;
 
             #endregion
-
         }
 
 
@@ -214,8 +214,11 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad2()
         {
-            
-
+            var result = from emp in Emps
+                         where emp.Job == "Frontend programmer" && emp.Salary > 1000
+                         orderby emp.Ename descending
+                         select emp;
+           
         }
 
         /// <summary>
@@ -223,7 +226,9 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad3()
         {
-          
+            var result = Emps.Select(emp => emp.Salary).Max();
+
+            
         }
 
         /// <summary>
@@ -231,7 +236,9 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad4()
         {
-
+            var result = from emp in Emps
+                         where emp.Salary == Emps.Select(e => e.Salary).Max()
+                         select emp;
         }
 
         /// <summary>
@@ -239,7 +246,12 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad5()
         {
-
+            var result = from emp in Emps
+                         select new
+                         {
+                             Nazwisko = emp.Ename,
+                             Praca = emp.Job
+                         };
         }
 
         /// <summary>
@@ -249,7 +261,15 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad6()
         {
-
+            var result = from emp in Emps
+                         join dept in Depts
+                         on emp.Deptno equals dept.Deptno
+                         select new
+                         {
+                             emp.Ename,
+                             emp.Job,
+                             dept.Dname
+                         };
         }
 
         /// <summary>
@@ -257,7 +277,13 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad7()
         {
-
+            var result = from emp in Emps
+                         group emp by emp.Job into l
+                         select new
+                         {
+                             Praca = l.Key,
+                             LiczbaPracownikow = l.Count()
+                         };
         }
 
         /// <summary>
@@ -266,7 +292,8 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad8()
         {
-
+            bool backProg = Emps.Where(b => b.Job == "Backend programmer")
+                            .ToList().Capacity > 0;
         }
 
         /// <summary>
@@ -275,7 +302,10 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad9()
         {
-
+            var result = (from emp in Emps
+                         where emp.Job == "Frontend programmer"
+                         orderby emp.HireDate descending
+                         select emp).Take(1);
         }
 
         /// <summary>
@@ -285,20 +315,43 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad10Button_Click()
         {
+            var tmp = (new[] { new
+            {
+                Ename = "Brak wartosci",
+                Job = (string)null,
+                HireDate = (DateTime?)null
+            }
+            }).ToList();
 
+            var result = Emps.Select(emp => new
+            {
+                emp.Ename,
+                emp.Job,
+                emp.HireDate
+            }).Union(tmp);
         }
 
         //Znajdź pracownika z najwyższą pensją wykorzystując metodę Aggregate()
         public void Przyklad11()
         {
-
+            var result = Emps.Aggregate(0, (maxP, next) =>
+                         (next.Salary >= maxP ? maxP = next.Salary : maxP));
         }
 
         //Z pomocą języka LINQ i metody SelectMany wykonaj złączenie
         //typu CROSS JOIN
         public void Przyklad12()
         {
+            var result = Emps.SelectMany(e => Depts, (e, d) => new
+            {
+                emp = e,
+                dept = d
+            });
 
+            foreach (var r in result)
+            {
+                Debug.WriteLine(r.dept + " - " + r.emp);
+            }
         }
     }
 }
